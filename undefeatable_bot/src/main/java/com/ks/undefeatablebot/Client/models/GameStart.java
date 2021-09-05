@@ -1,4 +1,5 @@
 package com.ks.undefeatablebot.Client.models;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class GameStart {
@@ -23,6 +24,7 @@ public class GameStart {
                 '}';
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private static class Game {
 
         private final String id;

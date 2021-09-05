@@ -82,10 +82,12 @@ public class JsonClient implements AutoCloseable{
         log.info("Making request: " + request.getMethod() + " " + request.getURI());
         CloseableHttpResponse response;
         try {
+            log.info("Request Made");
             response = this.client.execute(request);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        } 
         checkResponse(response);
         return response;
     }

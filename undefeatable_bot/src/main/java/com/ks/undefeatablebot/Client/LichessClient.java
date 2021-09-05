@@ -1,8 +1,8 @@
 package com.ks.undefeatablebot.Client;
 
 
-import com.ks.undefeatablebot.Client.handler.GameEventHandler;
-import com.ks.undefeatablebot.Client.handler.UserEventHandler;
+import com.ks.undefeatablebot.Client.handler.GameEvent;
+import com.ks.undefeatablebot.Client.handler.UserEvent;
 import com.ks.undefeatablebot.Client.http.Json;
 import com.ks.undefeatablebot.Client.http.JsonClient;
 import com.ks.undefeatablebot.Client.http.JsonResponse;
@@ -41,22 +41,29 @@ public class LichessClient implements AutoCloseable{
         return post(URLS.BOT + "/account/upgrade", Status.class);
     }
 
-    public void streamIncomingEvents(UserEventHandler handler) {
+    public void streamIncomingEvents(UserEvent handler) {
         httpClient.getAndStream(URLS.STREAM + "/event", (json, context) -> {
+            System.out.println(json.toString());
             ObjectNode node = (ObjectNode) json;
             String type = node.get("type").asText();
             if (type.equals("challenge")) {
                 handler.incomingChallenge(node);
             } else if (type.equals("gameStart")) {
                 handler.gameStart(Json.parseJson(node, GameStart.class));
-            } else {
+            } else if(type.equals("challengeCanceled")){
+                handler.challengeCanceled(node);
+            } else if(type.equals("gameFinish")){
+                handler.gameFinish(node);
+            }
+            else {
                 throw new RuntimeException("Unhandled event type: '" + type + "' \nFull json: " + json);
             }
         });
     }
 
-    public void streamGameState(String gameId, GameEventHandler handler) {
+    public void streamGameState(String gameId, GameEvent handler) {
         httpClient.getAndStream(URLS.BOT + "/game/stream/" + gameId, (json, context) -> {
+            System.out.println(json.toString());
             ObjectNode node = (ObjectNode) json;
             String type = node.get("type").asText();
             if (type.equals("gameFull")) {
@@ -72,6 +79,7 @@ public class LichessClient implements AutoCloseable{
 
     public Status makeMove(String gameId, String move) {
         String url = URLS.BOT + "/game/" + gameId + "/move/" + move;
+
         return post(url, Status.class);
     }
 
@@ -103,25 +111,34 @@ public class LichessClient implements AutoCloseable{
 
     private JsonNode get(String url) {
         try (JsonResponse response = httpClient.get(url)) {
-            return response.toJson();
+            JsonNode json = response.toJson();
+            response.close();
+            return json;
         }
     }
 
     private <T> T get(String url, Class<T> toConvertTo) {
         try (JsonResponse response = httpClient.get(url)) {
-            return response.toObject(toConvertTo);
+            T object = response.toObject(toConvertTo);
+            response.close();
+            return object;
         }
     }
 
     private <T> T post(String url, Class<T> toConvertTo) {
         try (JsonResponse response = httpClient.post(url)) {
-            return response.toObject(toConvertTo);
+            System.out.println(response.toString());
+            T object = response.toObject(toConvertTo);
+            response.close();
+            return object;
         }
     }
 
     private <T> T post(String url, ObjectNode postData, Class<T> toConvertTo) {
         try (JsonResponse response = httpClient.post(url, postData)) {
-            return response.toObject(toConvertTo);
+            T object = response.toObject(toConvertTo);
+            response.close();
+            return object;
         }
     }
 
