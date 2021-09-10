@@ -51,7 +51,7 @@ public class LichessClient implements AutoCloseable{
             } else if (type.equals("gameStart")) {
                 handler.gameStart(Json.parseJson(node, GameStart.class));
             } else if(type.equals("challengeCanceled")){
-                handler.challengeCanceled(node);
+                handler.challengeCancelled(node);
             } else if(type.equals("gameFinish")){
                 handler.gameFinish(node);
             }
@@ -111,40 +111,34 @@ public class LichessClient implements AutoCloseable{
 
     private JsonNode get(String url) {
         try (JsonResponse response = httpClient.get(url)) {
-            JsonNode json = response.toJson();
-            response.close();
-            return json;
+            return response.toJson();
         }
     }
 
     private <T> T get(String url, Class<T> toConvertTo) {
         try (JsonResponse response = httpClient.get(url)) {
-            T object = response.toObject(toConvertTo);
-            response.close();
-            return object;
+            return response.toObject(toConvertTo);
         }
     }
 
     private <T> T post(String url, Class<T> toConvertTo) {
         try (JsonResponse response = httpClient.post(url)) {
             System.out.println(response.toString());
-            T object = response.toObject(toConvertTo);
-            response.close();
-            return object;
+            return response.toObject(toConvertTo);
         }
     }
 
     private <T> T post(String url, ObjectNode postData, Class<T> toConvertTo) {
         try (JsonResponse response = httpClient.post(url, postData)) {
-            T object = response.toObject(toConvertTo);
-            response.close();
-            return object;
+            return response.toObject(toConvertTo);
         }
     }
 
     @Override
     public void close() throws Exception {
+        System.out.println("closing client");
         httpClient.close();
+        System.out.println("closed client");
     }
 
 }

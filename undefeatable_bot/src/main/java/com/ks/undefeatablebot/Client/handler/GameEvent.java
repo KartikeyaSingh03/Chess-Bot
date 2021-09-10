@@ -9,6 +9,7 @@ import com.ks.undefeatablebot.Client.models.Status;
 public class GameEvent {
 
     private LichessClient client;
+    
     private String id;
     private Boolean isWhite;
 
@@ -24,6 +25,16 @@ public class GameEvent {
         }
     }
 
+    private int numMoves(String moves){
+        return moves.split(" ").length;
+    }
+
+    private Boolean botTurn(int num_moves){
+        if((num_moves%2 == 0 && isWhite) || (num_moves%2 == 1 && !isWhite))
+            return true;
+        return false;
+    }
+
     public void chatReceived(ObjectNode chat){
         System.out.println("Chat");
     };
@@ -33,25 +44,40 @@ public class GameEvent {
         checkColor(gameState);
         System.out.println(isWhite);
         if(isWhite) {
-            // Scanner sc = new Scanner(System.in);
-            // String move = sc.nextLine();
-            // Status status = client.makeMove(id, move);
-            String move = "e2e4";
+            Scanner sc = new Scanner(System.in);
+            String move = sc.nextLine();
             Status status = client.makeMove(id, move);
             System.out.println(status.isOk());
         }
     };
 
     public void gameStateUpdate(ObjectNode gameState){
-        // System.out.println("Game State Update");
-        // Scanner sc = new Scanner(System.in);
-        // String move = sc.nextLine();
-        // String move = "e7e5";
-        // Status status = client.makeMove(id, move);
-        // System.out.println(status.isOk());
-        
-        
-        Status status = client.abortGame(id);
-        System.out.println(status.isOk());
+        System.out.println("Game State Update");
+
+        String stat = gameState.get("status").asText().toString();                
+
+        System.out.println(stat);
+
+        if(stat.equals("mate") || stat.equals("resign") || stat.equals("aborted")){
+            try {
+                client.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // notifyAll();
+            return; 
+        }
+
+        String moves =  gameState.get("moves").asText().toString();
+
+        int num_moves = numMoves(moves);
+
+        if(botTurn(num_moves)){
+            Scanner sc = new Scanner(System.in);
+            String move = sc.nextLine();
+            Status status = client.makeMove(id, move);
+            System.out.println(status.isOk());
+        }
+ 
     };
 }

@@ -1,6 +1,7 @@
 package com.ks.undefeatablebot.Client.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -80,6 +81,10 @@ public class JsonClient implements AutoCloseable{
 
     private CloseableHttpResponse execute(HttpUriRequest request) {
         log.info("Making request: " + request.getMethod() + " " + request.getURI());
+        Header[] headers = request.getAllHeaders();
+        for(Header header : headers){
+            log.info(header.getName() + " " + header.getValue());
+        }
         CloseableHttpResponse response;
         try {
             log.info("Request Made");
